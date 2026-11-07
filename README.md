@@ -43,3 +43,22 @@ cd <your-repo-name>
 ```
 
 If your app needs API keys, use a local environment file such as `.env`. Keep private keys out of source code, browser code, screenshots, and commits. The template ignores `.env`; `.env.example` contains placeholders only.
+
+## Run the DJ Transition Helper (`app/`)
+
+The prototype is one static page, [`app/index.html`](./app/index.html). It has no backend, no build step, and no API keys.
+
+- **Quickest:** open `app/index.html` in any modern browser (double-click it, or drag it into a browser window).
+- **Or serve it locally** from the repo root, then visit <http://localhost:8000/app/>:
+
+```bash
+python3 -m http.server 8000
+```
+
+How to use it:
+1. Choose the song that's playing now from the **Current song** dropdown. The app starts with 20 placeholder songs.
+2. **Best next tracks** ranks every other song. Smooth = same key or ±1 on the Camelot wheel with the same letter (12 wraps to 1). Mood shift = same number with the other letter (8A ↔ 8B). Energy boost = +2. A BPM within ±6% is an easy blend; anything wider is flagged. Each suggestion gets a one-sentence explanation.
+3. Click **Add to queue** to build your set. **Play** makes a queued song the current one.
+4. To use your own songs, paste one per line as `Title - Artist, BPM, Key` (e.g. `Midnight Run - Nova Lane, 124, 8A`) and click **Replace song list**. Lines that don't fit that format are skipped and listed. **Restore samples** brings the placeholders back.
+
+Nothing is saved; reloading the page resets the song list and queue.

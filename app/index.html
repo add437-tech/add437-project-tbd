@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DJ Transition Helper</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1d2330; --muted: #5f6b7d; --border: #d9dee6;
+    --accent: #4b5bdc; --smooth: #1d8a4e; --mood: #7a4bd1; --boost: #c46a00; --clash: #b3261e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151b; --card: #1b2029; --text: #e7eaf0; --muted: #9aa5b5; --border: #2e3542;
+      --accent: #8b97ff; --smooth: #4cc489; --mood: #b493ff; --boost: #f0a345; --clash: #ff7b72;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 48px; }
+  h1 { margin: 0 0 4px; font-size: 1.6rem; }
+  h2 { margin: 0 0 12px; font-size: 1.1rem; }
+  p.sub { margin: 0 0 20px; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  label { font-weight: 600; display: block; margin-bottom: 6px; }
+  select, textarea, button { font: inherit; color: inherit; }
+  select, textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
+  textarea { min-height: 140px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; }
+  button { cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 6px; padding: 6px 12px; }
+  button.ghost { background: transparent; color: var(--accent); }
+  button:disabled { opacity: .5; cursor: default; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+  .msg { font-size: 13px; color: var(--muted); }
+  .msg.err { color: var(--clash); }
+  .now { margin-top: 10px; color: var(--muted); }
+  ol.suggest, ol.queue { list-style: none; margin: 0; padding: 0; }
+  ol.suggest li { border-top: 1px solid var(--border); padding: 10px 0; display: flex; gap: 12px; align-items: flex-start; }
+  ol.suggest li:first-child { border-top: 0; }
+  .rank { font-weight: 700; color: var(--muted); min-width: 1.8em; }
+  .info { flex: 1; min-width: 0; }
+  .title { font-weight: 600; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .why { margin-top: 4px; }
+  .tags { margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { font-size: 12px; padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; }
+  .t-smooth { color: var(--smooth); } .t-mood { color: var(--mood); }
+  .t-boost { color: var(--boost); }   .t-clash, .t-bpmflag { color: var(--clash); }
+  .t-blend { color: var(--smooth); }
+  ol.queue li { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid var(--border); }
+  ol.queue li:first-child { border-top: 0; }
+  .x { background: transparent; color: var(--clash); border-color: transparent; padding: 2px 6px; }
+  .legend { font-size: 13px; color: var(--muted); margin: 0; padding-left: 18px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>DJ Transition Helper</h1>
+  <p class="sub">Pick what's playing now and see which track to mix in next, ranked by Camelot key and BPM.</p>
+
+  <div class="grid">
+    <div>
+      <section class="card">
+        <label for="current">Current song</label>
+        <select id="current"></select>
+        <div class="now" id="nowInfo"></div>
+      </section>
+
+      <section class="card">
+        <h2>Best next tracks</h2>
+        <ol class="suggest" id="suggestions"></ol>
+      </section>
+    </div>
+
+    <div>
+      <section class="card">
+        <h2>Queue</h2>
+        <ol class="queue" id="queue"></ol>
+        <p class="msg" id="queueEmpty">Nothing queued yet. Hit “Add to queue” on a suggestion.</p>
+        <div class="row"><button class="ghost" id="clearQueue">Clear queue</button></div>
+      </section>
+
+      <section class="card">
+        <label for="paste">Paste your songs</label>
+        <p class="msg" style="margin:0 0 6px">One per line: <code>Title - Artist, BPM, Key</code></p>
+        <textarea id="paste" placeholder="Midnight Run - Nova Lane, 124, 8A&#10;Golden Hour - The Tides, 126, 9A"></textarea>
+        <div class="row">
+          <button id="loadBtn">Replace song list</button>
+          <button class="ghost" id="resetBtn">Restore samples</button>
+        </div>
+        <p class="msg" id="pasteMsg"></p>
+      </section>
+
+      <section class="card">
+        <h2>How ranking works</h2>
+        <ul class="legend">
+          <li><b class="t-smooth">Smooth</b>: same key, or ±1 on the wheel with the same letter (12 wraps to 1).</li>
+          <li><b class="t-mood">Mood shift</b>: same number, other letter (8A ↔ 8B).</li>
+          <li><b class="t-boost">Energy boost</b>: +2 on the wheel, same letter.</li>
+          <li><b class="t-blend">Easy blend</b>: BPM within ±6%; anything wider gets flagged.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script>
+// ---------- Data ----------
+const SAMPLE_SONGS = [
+  ["Midnight Run", "Nova Lane", 124, "8A"],
+  ["Golden Hour", "The Tides", 126, "9A"],
+  ["Neon Pulse", "Kairo", 122, "7A"],
+  ["Skyline", "Mira Vale", 125, "8B"],
+  ["Deep Current", "Oslo Drift", 120, "10A"],
+  ["Afterglow", "Sunset Theory", 128, "9B"],
+  ["Velvet Room", "Jules Okafor", 118, "6A"],
+  ["Static Hearts", "Paper Planets", 130, "11A"],
+  ["Low Tide", "Coastline", 123, "8A"],
+  ["Firefly", "Lumen", 127, "10B"],
+  ["Echo Chamber", "Dana Reyes", 140, "12A"],
+  ["First Light", "Northbound", 124, "1A"],
+  ["Gravity", "Hollow Sun", 126, "5A"],
+  ["Riverbend", "Ada Park", 121, "7B"],
+  ["Cold Fusion", "Vektor", 132, "2A"],
+  ["Slow Burn", "Marlowe", 100, "8A"],
+  ["Lucid", "Ivy & The Wires", 125, "3B"],
+  ["Night Market", "Tomo", 122, "9A"],
+  ["Overdrive", "Redline", 128, "11B"],
+  ["Homecoming", "Sea of Lanterns", 124, "4A"],
+].map(([title, artist, bpm, key]) => ({ title, artist, bpm, key }));
+
+let songs = SAMPLE_SONGS.slice();
+let queue = [];          // array of song objects
+let currentIndex = 0;
+
+// ---------- Camelot + BPM rules ----------
+function parseKey(key) {
+  const m = /^(1[0-2]|[1-9])([AB])$/i.exec(String(key).trim());
+  return m ? { num: Number(m[1]), letter: m[2].toUpperCase() } : null;
+}
+
+// Steps clockwise from a to b on the 12-position wheel, as -5..+6.
+function wheelStep(a, b) {
+  let d = ((b - a) % 12 + 12) % 12;  // 0..11
+  return d > 6 ? d - 12 : d;
+}
+
+function keyRelation(fromKey, toKey) {
+  const a = parseKey(fromKey), b = parseKey(toKey);
+  const step = wheelStep(a.num, b.num);
+  if (a.letter === b.letter) {
+    if (step === 0) return { type: "smooth", score: 100, label: "Smooth", text: `the same key (${b.num}${b.letter})` };
+    if (step === 1 || step === -1) return { type: "smooth", score: 90, label: "Smooth", text: `a neighbouring key (${a.num}${a.letter} → ${b.num}${b.letter})` };
+    if (step === 2) return { type: "boost", score: 70, label: "Energy boost", text: `two steps up the wheel (${a.num}${a.letter} → ${b.num}${b.letter}), which lifts the energy` };
+  } else if (step === 0) {
+    const mood = b.letter === "B" ? "brighter, major" : "darker, minor";
+    return { type: "mood", score: 80, label: "Mood shift", text: `the same number with the other letter (${a.num}${a.letter} → ${b.num}${b.letter}), a shift to a ${mood} feel` };
+  }
+  return { type: "clash", score: 0, label: "Key clash", text: `a key that doesn't sit well next to it (${a.num}${a.letter} → ${b.num}${b.letter})` };
+}
+
+function bpmRelation(fromBpm, toBpm) {
+  const pct = (toBpm - fromBpm) / fromBpm * 100;
+  const abs = Math.abs(pct);
+  const easy = abs <= 6;
+  const dir = pct > 0 ? "faster" : "slower";
+  const text = abs < 0.5 ? "the same tempo" : `${abs.toFixed(1)}% ${dir} (${fromBpm} → ${toBpm} BPM)`;
+  // Easy blends lose a little for distance; anything over 6% takes a big penalty.
+  const penalty = easy ? abs : 40 + abs;
+  return { easy, pct, abs, text, penalty };
+}
+
+function rankFor(current) {
+  return songs
+    .map((s, i) => ({ s, i }))
+    .filter(({ i }) => i !== currentIndex)
+    .map(({ s, i }) => {
+      const key = keyRelation(current.key, s.key);
+      const bpm = bpmRelation(current.bpm, s.bpm);
+      return { song: s, index: i, key, bpm, score: key.score - bpm.penalty };
+    })
+    .sort((a, b) => b.score - a.score || a.bpm.abs - b.bpm.abs);
+}
+
+function explain(r) {
+  const k = r.key, b = r.bpm;
+  if (k.type === "clash" && !b.easy) return `Risky pick: it's in ${k.text} and ${b.text}, so you'd need a hard cut or a lot of EQ work.`;
+  if (k.type === "clash") return `The tempo is an easy blend at ${b.text}, but it's in ${k.text}, so keep the overlap short.`;
+  if (!b.easy) return `Harmonically it's ${k.text}, but it's ${b.text}, which is past the ±6% range, so plan a tempo ride or a quick cut.`;
+  const lead = { smooth: "Seamless mix", mood: "Nice mood change", boost: "Good for lifting the floor" }[k.type];
+  return `${lead}: it's in ${k.text} and ${b.text}, so it'll blend easily.`;
+}
+
+// ---------- Rendering ----------
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const songLabel = s => `${s.title} – ${s.artist}`;
+
+function renderSelect() {
+  $("current").innerHTML = songs
+    .map((s, i) => `<option value="${i}">${esc(songLabel(s))} (${s.bpm} BPM, ${s.key})</option>`)
+    .join("");
+  $("current").value = String(currentIndex);
+}
+
+function renderSuggestions() {
+  const cur = songs[currentIndex];
+  $("nowInfo").textContent = cur ? `Now playing: ${cur.bpm} BPM in ${cur.key}` : "";
+  if (!cur || songs.length < 2) {
+    $("suggestions").innerHTML = `<li class="msg">Add at least two songs to get suggestions.</li>`;
+    return;
+  }
+  $("suggestions").innerHTML = rankFor(cur).map((r, n) => {
+    const inQueue = queue.includes(r.song);
+    return `<li>
+      <span class="rank">${n + 1}</span>
+      <div class="info">
+        <div class="title">${esc(songLabel(r.song))}</div>
+        <div class="meta">${r.song.bpm} BPM · ${r.song.key}</div>
+        <div class="tags">
+          <span class="tag t-${r.key.type}">${r.key.label}</span>
+          <span class="tag ${r.bpm.easy ? "t-blend" : "t-bpmflag"}">${r.bpm.easy ? "Easy blend" : "⚠ BPM gap " + r.bpm.abs.toFixed(1) + "%"}</span>
+        </div>
+        <div class="why">${esc(explain(r))}</div>
+      </div>
+      <button data-add="${r.index}" ${inQueue ? "disabled" : ""}>${inQueue ? "Queued" : "Add to queue"}</button>
+    </li>`;
+  }).join("");
+}
+
+function renderQueue() {
+  $("queue").innerHTML = queue.map((s, i) => `<li>
+      <span>${i + 1}. ${esc(songLabel(s))} <span class="meta">(${s.bpm}, ${s.key})</span></span>
+      <span>
+        <button class="ghost" data-play="${i}" title="Make this the current song">Play</button>
+        <button class="x" data-remove="${i}" aria-label="Remove">✕</button>
+      </span>
+    </li>`).join("");
+  $("queueEmpty").style.display = queue.length ? "none" : "block";
+}
+
+function renderAll() { renderSelect(); renderSuggestions(); renderQueue(); }
+
+// ---------- Paste parsing ----------
+// "Title - Artist, BPM, Key". Splits on the LAST two commas so titles may contain commas.
+function parseLine(line) {
+  const parts = line.split(",");
+  if (parts.length < 3) return { error: "expected “Title - Artist, BPM, Key”" };
+  const key = parts.pop().trim().toUpperCase();
+  const bpmText = parts.pop().trim();
+  const name = parts.join(",").trim();
+  const dash = name.indexOf(" - ");
+  if (dash === -1) return { error: "missing “ - ” between title and artist" };
+  const title = name.slice(0, dash).trim(), artist = name.slice(dash + 3).trim();
+  const bpm = Number(bpmText);
+  if (!title || !artist) return { error: "title or artist is empty" };
+  if (!Number.isFinite(bpm) || bpm <= 0) return { error: `BPM “${bpmText}” isn't a number` };
+  if (!parseKey(key)) return { error: `key “${key}” isn't a Camelot key like 8A` };
+  return { song: { title, artist, bpm: Math.round(bpm * 10) / 10, key } };
+}
+
+function loadPasted() {
+  const lines = $("paste").value.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const parsed = [], errors = [];
+  lines.forEach((line, i) => {
+    const r = parseLine(line);
+    if (r.song) parsed.push(r.song); else errors.push(`Line ${i + 1}: ${r.error}`);
+  });
+  const msg = $("pasteMsg");
+  if (!parsed.length) {
+    msg.className = "msg err";
+    msg.textContent = lines.length ? "No valid songs found. " + errors.join(" · ") : "Paste at least one song first.";
+    return;
+  }
+  setSongs(parsed);
+  msg.className = errors.length ? "msg err" : "msg";
+  msg.textContent = `Loaded ${parsed.length} song${parsed.length === 1 ? "" : "s"}.` +
+    (errors.length ? ` Skipped ${errors.length}: ${errors.join(" · ")}` : "");
+}
+
+function setSongs(list) {
+  songs = list;
+  queue = [];
+  currentIndex = 0;
+  renderAll();
+}
+
+// ---------- Events ----------
+$("current").addEventListener("change", e => { currentIndex = Number(e.target.value); renderSuggestions(); });
+$("suggestions").addEventListener("click", e => {
+  const i = e.target.dataset.add;
+  if (i === undefined) return;
+  queue.push(songs[Number(i)]);
+  renderSuggestions(); renderQueue();
+});
+$("queue").addEventListener("click", e => {
+  if (e.target.dataset.remove !== undefined) {
+    queue.splice(Number(e.target.dataset.remove), 1);
+  } else if (e.target.dataset.play !== undefined) {
+    const [song] = queue.splice(Number(e.target.dataset.play), 1);
+    currentIndex = songs.indexOf(song);
+    renderSelect();
+  } else return;
+  renderSuggestions(); renderQueue();
+});
+$("clearQueue").addEventListener("click", () => { queue = []; renderSuggestions(); renderQueue(); });
+$("loadBtn").addEventListener("click", loadPasted);
+$("resetBtn").addEventListener("click", () => {
+  setSongs(SAMPLE_SONGS.slice());
+  $("pasteMsg").className = "msg";
+  $("pasteMsg").textContent = "Sample songs restored.";
+});
+
+renderAll();
+</script>
+</body>
+</html>

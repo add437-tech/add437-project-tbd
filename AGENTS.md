@@ -13,6 +13,12 @@
 - **Run deterministic tests:** `[e.g., pytest / npm test]`
 - **Run model evals:** `[e.g., python tests/eval.py]`
 
+### DJ Transition Helper (`app/index.html`)
+- **Install dependencies:** none. It's a single static HTML file with inline CSS/JS, no backend, and no API keys.
+- **Run locally:** open `app/index.html` in a browser, or run `python3 -m http.server 8000` from the repo root and visit `http://localhost:8000/app/`.
+- **Where the logic lives:** `keyRelation()` (Camelot rules), `bpmRelation()` (±6% blend check), `rankFor()` (sorting), `explain()` (one-sentence reason), and `parseLine()` (the `Title - Artist, BPM, Key` paste format), all in the `<script>` block of `app/index.html`.
+- **Manual check:** pick a song, confirm the top suggestions are same/adjacent keys within ±6% BPM, paste a few lines including one bad line (it should be skipped with a message), and add or remove songs from the queue.
+
 ## 3. Non-Negotiable Engineering Rules
 1. **Plan before coding:** Before touching multiple files, propose a brief plan and wait for approval.
 2. **Small batches:** Make small, focused changes that can be reviewed and explained by a human in a single Pull Request.
