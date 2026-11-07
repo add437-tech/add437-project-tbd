@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>[Your Product Name] · Building with AI (Fall 2026)</title>
+  <title>DJ Sounding Board · Building with AI (Fall 2026)</title>
 
   <!-- Week 1: create your PostHog account only.
        Build 2: paste your project's current PostHog web snippet here,
@@ -144,8 +144,8 @@
     <!-- HERO / PRODUCT PITCH -->
     <header>
       <span class="eyebrow">NYU Stern · Building with AI · Fall 2026</span>
-      <h1>[Your Product Name]</h1>
-      <p class="tagline">[One clear sentence: Who is this for, and what painful job does it do for them?]</p>
+      <h1>DJ Sounding Board</h1>
+      <p class="tagline">A set-planning assistant that tells DJs which song to play next based on BPM and Camelot key, and explains why the transition works.</p>
       <div class="cta-row">
         <a class="btn" href="#live-demo" onclick="window.posthog && posthog.capture('clicked_try_product')">See the Product →</a>
         <a class="btn btn-secondary" href="#prd">Read the Living PRD</a>
@@ -157,8 +157,8 @@
     <section id="live-demo">
       <h2>Product Showcase (Prototype / Live App / 2-Min Video)</h2>
       <p>
-        <strong>Current Status:</strong> [Build 1: local prototype / Builds 2–4: local app / Build 5: cloud app]<br />
-        <strong>Demo:</strong> [Add a screenshot or GIF now; add the live cloud app URL in Build 5.]
+        <strong>Current Status:</strong> Build 1: local prototype<br />
+        <strong>Demo:</strong> [Screenshot coming soon]
       </p>
       <p class="meta">
         Ask your coding agent to embed a screenshot or GIF of your local prototype for Build 1. Keep this evidence current, then add your cloud app link and two-minute video in Build 5.
@@ -171,16 +171,16 @@
       <p class="meta">Updated every week as we test with real users and learn what works.</p>
 
       <h3>1. Target User & The Job to Be Done</h3>
-      <p><strong>Who is this for?</strong> [Name a specific, reachable person or role you have direct access to.]</p>
-      <p><strong>The painful "Before" workflow:</strong> [How do they do this today, and why is it slow, manual, or broken?]</p>
-      <p><strong>The "After" workflow with this product:</strong> [What does your tool do for them in one sitting?]</p>
+      <p><strong>Who is this for?</strong> Beginner and intermediate DJs who want to build sets from playlists and don’t yet have harmonic mixing memorized.</p>
+      <p><strong>The painful "Before" workflow:</strong> I would curate a playlist of songs, but I would pick the next track by gut feel or by checking BPM and key on a lookup site one song at a time. I don’t really know which key jumps are safe, so transitions sometimes clash, and I can’t plan where the energy goes. This was also a very manual process that was not sustainable for longer sets.</p>
+      <p><strong>The "After" workflow with this product:</strong> I pick the song that’s playing, and the tool ranks the best next tracks from my list. For each one it says what kind of move it is (smooth, energy boost, mood shift) and why, so I learn Camelot mixing while I plan.</p>
 
       <h3>2. Scope & Explicit Non-Goals</h3>
       <ul>
-        <li><strong>In Scope (Core Workflow):</strong> [The 1 main workflow this product does reliably]</li>
-        <li><strong>Out of Scope #1:</strong> [Feature you are deliberately NOT building in 6 weeks]</li>
-        <li><strong>Out of Scope #2:</strong> [Feature you are deliberately NOT building in 6 weeks]</li>
-        <li><strong>Out of Scope #3:</strong> [Feature you are deliberately NOT building in 6 weeks]</li>
+        <li><strong>In Scope (Core Workflow):</strong> Load or enter a list of songs with BPM and Camelot key → pick the current song → see the next-song options ranked by compatibility, each with a plain-English explanation → add one to the queue and repeat.</li>
+        <li><strong>Out of Scope #1:</strong> It doesn’t play or mix audio.</li>
+        <li><strong>Out of Scope #2:</strong> It doesn’t control Spotify or its DJ feature.</li>
+        <li><strong>Out of Scope #3:</strong> It doesn’t detect BPM or key from audio files; songs are entered manually for now.</li>
       </ul>
 
       <h3>3. How It Works Under the Hood & Riskiest Assumption (Week 2+)</h3>
