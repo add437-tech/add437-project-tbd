@@ -7,14 +7,12 @@ Before: I would curate a playlist of songs but I would pick the next track by gu
 After: I pick the song that’s playing, and the tool ranks the best next tracks from my list. For each one it says what kind of move it is (smooth, energy boost, mood shift) and why, so I learn Camelot mixing while I plan.
 
 Core workflow:
-
-Load or enter a list of songs with BPM and Camelot key.
-Pick the current song.
-See the next-song options ranked by compatibility, each with a plain-English explanation.
-Add one to the queue and repeat.
+- Load or enter a list of songs with BPM and Camelot key.
+- Pick the current song.
+- See the next-song options ranked by compatibility, each with a plain-English explanation.
+- Add one to the queue and repeat.
 
 Non-goals:
-
-It doesn’t play or mix audio.
-It doesn’t control Spotify or its DJ feature.
-It doesn’t detect BPM or key from audio files; songs are entered manually for now.
+- It doesn’t play or mix audio.
+- It doesn’t control Spotify or its DJ feature.
+- It doesn’t detect BPM or key from audio files; songs are entered manually for now.
