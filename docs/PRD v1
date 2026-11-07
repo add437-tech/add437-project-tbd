@@ -1,0 +1,20 @@
+One-line pitch: A set-planning assistant that tells DJs which song to play next based on BPM and Camelot key, and explains why the transition works.
+
+Who it’s for: Beginner and intermediate DJs who want to build sets from playlists and don’t yet have harmonic mixing memorized. 
+
+Before: I would curate a playlist of songs but I would pick the next track by gut feel or by checking BPM and key on a lookup site one song at a time. I don’t really know which key jumps are safe, so transitions sometimes clash, and I can’t plan where the energy goes. This also was a very manual process that was not sustainable for longer sets.
+
+After: I pick the song that’s playing, and the tool ranks the best next tracks from my list. For each one it says what kind of move it is (smooth, energy boost, mood shift) and why, so I learn Camelot mixing while I plan.
+
+Core workflow:
+
+Load or enter a list of songs with BPM and Camelot key.
+Pick the current song.
+See the next-song options ranked by compatibility, each with a plain-English explanation.
+Add one to the queue and repeat.
+
+Non-goals:
+
+It doesn’t play or mix audio.
+It doesn’t control Spotify or its DJ feature.
+It doesn’t detect BPM or key from audio files; songs are entered manually for now.
